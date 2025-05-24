@@ -1,18 +1,29 @@
 const db = require('../../firebase');
 
 class Projeto {
-    constructor(body) {
+    constructor(body, session) {
         this.body = body;
+        this.session = session
         this.erros = [];
         this.projeto = null;
     }
 
     valida() {
-        const { nome, equipe, descricao, inicio, entrega } = this.body;
-        if (!nome || !equipe || !descricao || !inicio || !entrega) {
-            this.erros.push('Todos os campos devem estar preenchidos');
-        }
+    const { nome, descricao, inicio, entrega } = this.body;
+    if (!nome || !descricao || !inicio || !entrega) {
+        this.erros.push('Todos os campos devem estar preenchidos');
+        return;
     }
+
+    if (isNaN(new Date(inicio))) {
+        this.erros.push('Data de início inválida');
+    }
+
+    if (isNaN(new Date(entrega))) {
+        this.erros.push('Data de entrega inválida');
+    }
+}
+
 
     async criar() {
         this.valida();
@@ -21,7 +32,7 @@ class Projeto {
         try {
             const novoProjeto = {
                 nome: this.body.nome,
-                equipe: this.body.equipe,
+                usuario: this.session.usuario.nome,
                 descricao: this.body.descricao,
                 inicio: new Date(this.body.inicio),   
                 entrega: new Date(this.body.entrega),
@@ -55,10 +66,10 @@ class Projeto {
         try {
             const projetoAtualizado = {
                 nome: this.body.nome,
-                equipe: this.body.equipe,
+                usuario: this.session.usuario.nome,
                 descricao: this.body.descricao,
-                inicio: this.body.inicio,
-                entrega: this.body.entrega,
+                inicio: new Date(this.body.inicio),
+                entrega: new Date(this.body.entrega),
                 status: !!this.body.status,
             };
 

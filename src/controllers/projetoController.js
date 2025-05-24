@@ -7,22 +7,25 @@ exports.index = async (req, res) => {
 };
 
 exports.criar = async (req, res) => {
-    const projeto = new Projeto(req.body);
-    await projeto.criar();
+    try {
+        const projeto = new Projeto(req.body, req.session);
+        await projeto.criar();
 
-    if (projeto.erros.length > 0) {
-        console.log('Erro ao criar projeto:', projeto.erros);
-        return res.status(400).json({
-            errors: projeto.erros
-        });
-    }
+        if (projeto.erros.length > 0) {
+            return res.status(400).json({ errors: projeto.erros });
+        }
 
         res.status(200).json({ mensagem: 'Projeto criado com sucesso' });
+    } catch (e) {
+        console.error('Erro inesperado ao criar projeto:', e);
+        res.status(500).json({ errors: ['Erro interno do servidor.'] });
+    }
 };
+
 
 exports.editar = async (req, res) => {
     const id = req.params.id;
-    const projeto = new Projeto(req.body);
+    const projeto = new Projeto(req.body, req.session);
     await projeto.editar(id);
 
     if (projeto.erros.length > 0) {

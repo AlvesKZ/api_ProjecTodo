@@ -18,6 +18,7 @@ exports.entrar = async (req, res) => {
     };
 
     return res.status(200).json({
+        msg: 'Usuario logado com sucesso',
         usuario: req.session.usuario
     });
 };
