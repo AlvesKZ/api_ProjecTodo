@@ -1,14 +1,14 @@
 const Login = require('../models/LoginModel');
 
-exports.entrar = async (req,res) => {
+exports.entrar = async (req, res) => {
     const login = new Login(req.body);
     await login.entrar();
 
-    if(login.erros.length > 0 ) {
-        console.log('Erro entrar:', login.erros);  
+    if (login.erros.length > 0) {
+        console.log('Erro entrar:', login.erros);
         return res.status(400).json({
-            errors: e.errors.map( err => err.message)
-        });   
+            errors: login.erros
+        });
     }
 
     req.session.usuario = {
@@ -17,21 +17,29 @@ exports.entrar = async (req,res) => {
         nome: login.usuario.nome
     };
 
+    return res.status(200).json({
+        usuario: req.session.usuario
+    });
 };
 
 exports.registrar = async (req, res) => {
     const login = new Login(req.body);
-    await login.registra(); 
+    await login.registra();
 
     if (login.erros.length > 0) {
-        console.log('Erro ao se registrar:', login.erros);  
+        console.log('Erro ao se registrar:', login.erros);
         return res.status(400).json({
-            errors: e.errors.map( err => err.message)
+            errors: login.erros
         });
     }
-  
+
+    return res.status(201).json({
+        mensagem: 'Usuário registrado com sucesso!',
+        id: login.usuario.id
+    });
 };
 
 exports.sair = (req, res) => {
-  req.session.destroy();
+    req.session.destroy();
+    res.status(200).json({ mensagem: 'Sessão encerrada com sucesso.' });
 };

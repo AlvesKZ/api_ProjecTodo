@@ -9,7 +9,6 @@ class Projeto {
 
     valida() {
         const { nome, equipe, descricao, inicio, entrega } = this.body;
-
         if (!nome || !equipe || !descricao || !inicio || !entrega) {
             this.erros.push('Todos os campos devem estar preenchidos');
         }
@@ -17,7 +16,6 @@ class Projeto {
 
     async criar() {
         this.valida();
-
         if (this.erros.length > 0) return;
 
         try {
@@ -25,9 +23,9 @@ class Projeto {
                 nome: this.body.nome,
                 equipe: this.body.equipe,
                 descricao: this.body.descricao,
-                inicio: this.body.inicio,
-                entrega: this.body.entrega,
-                status: !!this.body.status, 
+                inicio: new Date(this.body.inicio),   
+                entrega: new Date(this.body.entrega),
+                status: !!this.body.status,
             };
 
             const projetoRef = await db.collection('projetos').add(novoProjeto);
@@ -53,7 +51,7 @@ class Projeto {
     async editar(id) {
         this.valida();
         if (this.erros.length > 0) return;
-    
+
         try {
             const projetoAtualizado = {
                 nome: this.body.nome,
@@ -63,7 +61,7 @@ class Projeto {
                 entrega: this.body.entrega,
                 status: !!this.body.status,
             };
-    
+
             await db.collection('projetos').doc(id).update(projetoAtualizado);
             this.projeto = { id, ...projetoAtualizado };
         } catch (e) {
