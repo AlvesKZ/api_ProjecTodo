@@ -12,13 +12,19 @@ exports.criar = async (req, res) => {
         await projeto.criar();
 
         if (projeto.erros.length > 0) {
-            return res.status(400).json({ errors: projeto.erros });
+            return res.status(400).json({ 
+                errors: projeto.erros 
+            });
         }
 
-        res.status(200).json({ mensagem: 'Projeto criado com sucesso' });
+        res.status(200).json({ 
+            mensagem: 'Projeto criado com sucesso' 
+        });
     } catch (e) {
         console.error('Erro inesperado ao criar projeto:', e);
-        res.status(500).json({ errors: ['Erro interno do servidor.'] });
+        return res.status(500).json({
+            errors: ['Erro interno do servidor.']
+        });
     }
 };
 
@@ -26,15 +32,24 @@ exports.criar = async (req, res) => {
 exports.editar = async (req, res) => {
     const id = req.params.id;
     const projeto = new Projeto(req.body, req.session);
+    if(req.session.usuario.nome !== req.body.nome) {
+        res.status(401).json({
+            erros: "Você não tem permissão para editar este projeto"
+        });
+    }
     await projeto.editar(id);
 
     if (projeto.erros.length > 0) {
         return res.status(400).json({
-            errors: projeto.erros
+            erros: projeto.erros
         });
     }
 
-    res.status(200).json({ mensagem: 'Projeto editado com sucesso' });
+    
+
+    res.status(200).json({ 
+        mensagem: 'Projeto editado com sucesso' 
+    });
 };
 
 exports.apagar = async (req, res) => {
@@ -49,5 +64,7 @@ exports.apagar = async (req, res) => {
         });
     }
 
-    res.status(200).json({ mensagem: 'Projeto apagado com sucesso' });
+    res.status(200).json({ 
+        mensagem: 'Projeto apagado com sucesso' 
+    });
 };
