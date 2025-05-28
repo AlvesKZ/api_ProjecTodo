@@ -28,43 +28,38 @@ exports.criar = async (req, res) => {
     }
 };
 
-
 exports.editar = async (req, res) => {
     const id = req.params.id;
     const projeto = new Projeto(req.body, req.session);
-    if(req.session.usuario.nome !== req.body.nome) {
-        res.status(401).json({
-            erros: "Você não tem permissão para editar este projeto"
-        });
+
+    const temPermissao = await projeto.verificarPermissao(id);
+    if (!temPermissao) {
+        return res.status(401).json({ erros: projeto.erros });
     }
+
     await projeto.editar(id);
 
     if (projeto.erros.length > 0) {
-        return res.status(400).json({
-            erros: projeto.erros
-        });
+        return res.status(400).json({ erros: projeto.erros });
     }
 
-    
-
-    res.status(200).json({ 
-        mensagem: 'Projeto editado com sucesso' 
-    });
+    return res.status(200).json({ mensagem: 'Projeto editado com sucesso' });
 };
 
 exports.apagar = async (req, res) => {
     const id = req.params.id;
-    const projeto = new Projeto({});
+    const projeto = new Projeto({}, req.session);
+
+    const temPermissao = await projeto.verificarPermissao(id);
+    if (!temPermissao) {
+        return res.status(401).json({ erros: projeto.erros });
+    }
+
     await projeto.apagar(id);
 
     if (projeto.erros.length > 0) {
-        console.log('Erro ao apagar projeto:', projeto.erros);
-        return res.status(400).json({
-            errors: projeto.erros
-        });
+        return res.status(400).json({ errors: projeto.erros });
     }
 
-    res.status(200).json({ 
-        mensagem: 'Projeto apagado com sucesso' 
-    });
+    return res.status(200).json({ mensagem: 'Projeto apagado com sucesso' });
 };

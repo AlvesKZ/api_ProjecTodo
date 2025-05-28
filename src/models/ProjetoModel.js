@@ -89,6 +89,32 @@ class Projeto {
             this.erros.push('Erro ao apagar projeto');
         }
     }
+
+    async verificarPermissao(id) {
+    try {
+        const doc = await db.collection('projetos').doc(id).get();
+
+        if (!doc.exists) {
+            this.erros.push('Projeto não encontrado');
+            return false;
+        }
+
+        const dados = doc.data();
+
+        if (dados.usuario !== this.session.usuario.nome) {
+            this.erros.push('Você não tem permissão para essa ação');
+            return false;
+        }
+
+        return true;
+    } catch (e) {
+        console.error('Erro ao verificar permissão:', e);
+        this.erros.push('Erro interno ao verificar permissão');
+        return false;
+    }
 }
+
+}
+
 
 module.exports = Projeto;
