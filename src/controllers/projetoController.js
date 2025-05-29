@@ -3,7 +3,11 @@ const Projeto = require('../models/ProjetoModel');
 exports.index = async (req, res) => {
     const projeto = new Projeto({});
     const projetos = await projeto.buscar();
-    res.status(200).json(projetos);
+
+    res.status(200).json({
+        usuario: req.session.usuario,
+        projetos
+    });
 };
 
 exports.criar = async (req, res) => {

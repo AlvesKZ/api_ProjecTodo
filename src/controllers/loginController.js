@@ -25,7 +25,7 @@ exports.entrar = async (req, res) => {
 
 exports.registrar = async (req, res) => {
     const login = new Login(req.body);
-    await login.registra();
+    await login.registrar();
 
     if (login.erros.length > 0) {
         console.log('Erro ao se registrar:', login.erros);

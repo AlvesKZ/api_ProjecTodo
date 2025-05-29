@@ -3,27 +3,30 @@ const db = require('../../firebase');
 class Projeto {
     constructor(body, session) {
         this.body = body;
-        this.session = session
+        this.session = session;
         this.erros = [];
         this.projeto = null;
     }
 
     valida() {
-    const { nome, descricao, inicio, entrega } = this.body;
-    if (!nome || !descricao || !inicio || !entrega) {
-        this.erros.push('Todos os campos devem estar preenchidos');
-        return;
+        const { nome, descricao, inicio, entrega } = this.body;
+        if (!nome || !descricao || !inicio || !entrega) {
+            this.erros.push('Todos os campos devem estar preenchidos');
+            return;
+        }
+
+        if (isNaN(new Date(inicio))) {
+            this.erros.push('Data de início inválida');
+        }
+
+        if (isNaN(new Date(entrega))) {
+            this.erros.push('Data de entrega inválida');
+        }
     }
 
-    if (isNaN(new Date(inicio))) {
-        this.erros.push('Data de início inválida');
+    getUsuarioNome() {
+        return this.session?.usuario?.nome || this.body.usuario || 'Desconhecido';
     }
-
-    if (isNaN(new Date(entrega))) {
-        this.erros.push('Data de entrega inválida');
-    }
-}
-
 
     async criar() {
         this.valida();
@@ -32,9 +35,9 @@ class Projeto {
         try {
             const novoProjeto = {
                 nome: this.body.nome,
-                usuario: this.session.usuario.nome,
+                usuario: this.getUsuarioNome(),
                 descricao: this.body.descricao,
-                inicio: new Date(this.body.inicio),   
+                inicio: new Date(this.body.inicio),
                 entrega: new Date(this.body.entrega),
                 status: !!this.body.status,
             };
@@ -66,7 +69,7 @@ class Projeto {
         try {
             const projetoAtualizado = {
                 nome: this.body.nome,
-                usuario: this.session.usuario.nome,
+                usuario: this.getUsuarioNome(),
                 descricao: this.body.descricao,
                 inicio: new Date(this.body.inicio),
                 entrega: new Date(this.body.entrega),
@@ -91,30 +94,29 @@ class Projeto {
     }
 
     async verificarPermissao(id) {
-    try {
-        const doc = await db.collection('projetos').doc(id).get();
+        try {
+            const doc = await db.collection('projetos').doc(id).get();
 
-        if (!doc.exists) {
-            this.erros.push('Projeto não encontrado');
+            if (!doc.exists) {
+                this.erros.push('Projeto não encontrado');
+                return false;
+            }
+
+            const dados = doc.data();
+            const usuarioAtual = this.getUsuarioNome();
+
+            if (dados.usuario !== usuarioAtual) {
+                this.erros.push('Você não tem permissão para essa ação');
+                return false;
+            }
+
+            return true;
+        } catch (e) {
+            console.error('Erro ao verificar permissão:', e);
+            this.erros.push('Erro interno ao verificar permissão');
             return false;
         }
-
-        const dados = doc.data();
-
-        if (dados.usuario !== this.session.usuario.nome) {
-            this.erros.push('Você não tem permissão para essa ação');
-            return false;
-        }
-
-        return true;
-    } catch (e) {
-        console.error('Erro ao verificar permissão:', e);
-        this.erros.push('Erro interno ao verificar permissão');
-        return false;
     }
 }
-
-}
-
 
 module.exports = Projeto;

@@ -33,7 +33,7 @@ class Login {
         this.usuario = { id: doc.id, ...dadosUsuario };
     }
 
-    async registra() {
+    async registrar() {
         if (!this.body || !this.body.nome || !this.body.email || !this.body.senha) {
             this.erros.push('Nome, email e senha são obrigatórios.');
             return;
