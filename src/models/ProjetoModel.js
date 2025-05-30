@@ -50,7 +50,7 @@ class Projeto {
         }
     }
 
-    async buscar() {
+    async index() {
         try {
             const conexao = await db.collection('projetos').get();
             const projetos = conexao.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -93,28 +93,13 @@ class Projeto {
         }
     }
 
-    async verificarPermissao(id) {
+    async mostrar(id) {
         try {
             const doc = await db.collection('projetos').doc(id).get();
-
-            if (!doc.exists) {
-                this.erros.push('Projeto não encontrado');
-                return false;
-            }
-
-            const dados = doc.data();
-            const usuarioAtual = this.getUsuarioNome();
-
-            if (dados.usuario !== usuarioAtual) {
-                this.erros.push('Você não tem permissão para essa ação');
-                return false;
-            }
-
-            return true;
-        } catch (e) {
-            console.error('Erro ao verificar permissão:', e);
-            this.erros.push('Erro interno ao verificar permissão');
-            return false;
+            return doc;  
+        } catch(e) {
+            this.erros.push('Erro ao buscar projeto');
+            throw e; 
         }
     }
 }

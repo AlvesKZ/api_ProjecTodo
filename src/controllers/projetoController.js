@@ -2,7 +2,7 @@ const Projeto = require('../models/ProjetoModel');
 
 exports.index = async (req, res) => {
     const projeto = new Projeto({});
-    const projetos = await projeto.buscar();
+    const projetos = await projeto.index();
 
     res.status(200).json({
         usuario: req.session.usuario,
@@ -36,11 +36,6 @@ exports.editar = async (req, res) => {
     const id = req.params.id;
     const projeto = new Projeto(req.body, req.session);
 
-    const temPermissao = await projeto.verificarPermissao(id);
-    if (!temPermissao) {
-        return res.status(401).json({ erros: projeto.erros });
-    }
-
     await projeto.editar(id);
 
     if (projeto.erros.length > 0) {
@@ -54,11 +49,6 @@ exports.apagar = async (req, res) => {
     const id = req.params.id;
     const projeto = new Projeto({}, req.session);
 
-    const temPermissao = await projeto.verificarPermissao(id);
-    if (!temPermissao) {
-        return res.status(401).json({ erros: projeto.erros });
-    }
-
     await projeto.apagar(id);
 
     if (projeto.erros.length > 0) {
@@ -66,4 +56,24 @@ exports.apagar = async (req, res) => {
     }
 
     return res.status(200).json({ mensagem: 'Projeto apagado com sucesso' });
+};
+
+exports.mostrar = async (req, res) => {
+  const id = req.params.id;
+  const projeto = new Projeto({}, req.session);
+
+  try {
+    const doc = await projeto.mostrar(id);
+
+    if (!doc.exists) {
+      return res.status(404).json({ mensagem: 'Projeto não encontrado' });
+    }
+
+    const projetoData = { id: doc.id, ...doc.data() };
+
+    return res.status(200).json({ projeto: projetoData });
+  } catch (error) {
+    console.error('Erro ao buscar projeto:', error);
+    return res.status(500).json({ mensagem: 'Erro interno ao buscar projeto' });
+  }
 };
